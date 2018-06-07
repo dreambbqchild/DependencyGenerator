@@ -1,14 +1,17 @@
 # Dependency Generator
 
 Takes a POCO Like:
+```
 class NoPhotoAvailable
 {
     Brush Label = new SolidColorBrush(Colors.Green);
     bool HasLabel = false;
 }
+```
 
 And Returns:
---- Label ---
+```C#
+//--- Label ---
 
 public Brush Label
 {
@@ -33,7 +36,7 @@ private static void LabelChangedCallback(DependencyObject d, DependencyPropertyC
 
 public static readonly DependencyProperty LabelProperty = DependencyProperty.Register(nameof(Label), typeof(Brush), typeof(NoPhotoAvailable), new FrameworkPropertyMetadata(new SolidColorBrush(Colors.Green), LabelChangedCallback));
 
---- HasLabel ---
+//--- HasLabel ---
 
 public bool HasLabel
 {
@@ -57,5 +60,5 @@ private static void HasLabelChangedCallback(DependencyObject d, DependencyProper
 }
 
 public static readonly DependencyProperty HasLabelProperty = DependencyProperty.Register(nameof(HasLabel), typeof(bool), typeof(NoPhotoAvailable), new FrameworkPropertyMetadata(false, HasLabelChangedCallback));
-
+```
 Because writing all that is annoying.
