@@ -92,7 +92,7 @@ namespace dpGenerator
             foreach (var variable in variableDeclaration.Variables)
             {
                 var dpName = SyntaxFactory.IdentifierName(string.Concat(variable.Identifier.Text, "Property"));
-				Console.WriteLine(string.Concat("--- ", variable.Identifier.Text, " ---"));
+				Console.WriteLine(string.Concat("//--- ", variable.Identifier.Text, " ---"));
 				Console.WriteLine();
                 PrintNode(WrapProperty(variableDeclaration.Type, dpName, variable));
                 PrintNode(AddChangedMethod(@class, variable));
