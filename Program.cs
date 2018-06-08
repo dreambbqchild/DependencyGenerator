@@ -27,12 +27,21 @@ namespace dpGenerator
         private static PropertyDeclarationSyntax WrapProperty(TypeSyntax type, IdentifierNameSyntax dpName, VariableDeclaratorSyntax variable)
         {
             return SyntaxFactory.PropertyDeclaration(type, variable.Identifier)
-                    .WithModifiers(SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PublicKeyword)))
+                    .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed)
+                    .WithModifiers(SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PublicKeyword).WithTrailingTrivia(SyntaxFactory.Whitespace(" "))))
                     .AddAccessorListAccessors(
                         SyntaxFactory.AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
-                            .WithBody(SyntaxFactory.Block(SyntaxFactory.ReturnStatement(SyntaxFactory.CastExpression(type, SyntaxFactory.InvocationExpression(getValue, SyntaxFactory.ArgumentList(SyntaxFactory.SingletonSeparatedList(SyntaxFactory.Argument(dpName)))))))),
+                            .WithLeadingTrivia(SyntaxFactory.CarriageReturnLineFeed, SyntaxFactory.Tab)
+                            .WithBody(SyntaxFactory.Block(SyntaxFactory.ReturnStatement(SyntaxFactory.CastExpression(type.WithoutTrailingTrivia(), SyntaxFactory.InvocationExpression(getValue, SyntaxFactory.ArgumentList(SyntaxFactory.SingletonSeparatedList(SyntaxFactory.Argument(dpName)))))
+                                                                                                     .WithLeadingTrivia(SyntaxFactory.Whitespace(" ")))
+                                                                       .WithLeadingTrivia(SyntaxFactory.Whitespace(" "))
+                                                                       .WithTrailingTrivia(SyntaxFactory.Whitespace(" ")))),
                         SyntaxFactory.AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
-                            .WithBody(SyntaxFactory.Block(SyntaxFactory.ExpressionStatement(SyntaxFactory.InvocationExpression(setValue, SyntaxFactory.ArgumentList(SyntaxFactory.SeparatedList(new ArgumentSyntax[] { SyntaxFactory.Argument(dpName), SyntaxFactory.Argument(SyntaxFactory.IdentifierName("value")) })))))));
+                            .WithLeadingTrivia(SyntaxFactory.CarriageReturnLineFeed, SyntaxFactory.Tab)
+                            .WithBody(SyntaxFactory.Block(SyntaxFactory.ExpressionStatement(SyntaxFactory.InvocationExpression(setValue, SyntaxFactory.ArgumentList(SyntaxFactory.SeparatedList(new ArgumentSyntax[] { SyntaxFactory.Argument(dpName), SyntaxFactory.Argument(SyntaxFactory.IdentifierName("value")).WithLeadingTrivia(SyntaxFactory.Whitespace(" ")) }))))
+                                                                       .WithLeadingTrivia(SyntaxFactory.Whitespace(" "))
+                                                                       .WithTrailingTrivia(SyntaxFactory.Whitespace(" "))))
+                            .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed));
         }
 
         private static MethodDeclarationSyntax AddChangedMethod(ClassDeclarationSyntax @class, VariableDeclaratorSyntax variable)
@@ -50,7 +59,8 @@ namespace dpGenerator
                         SyntaxFactory.VariableDeclarator(variableName)
                             .WithInitializer(SyntaxFactory.EqualsValueClause(SyntaxFactory.BinaryExpression(SyntaxKind.AsExpression, SyntaxFactory.IdentifierName("d"), SyntaxFactory.IdentifierName(@class.Identifier.Text))))
                     }))), SyntaxFactory.IfStatement(SyntaxFactory.BinaryExpression(SyntaxKind.NotEqualsExpression, SyntaxFactory.IdentifierName(variableName), SyntaxFactory.LiteralExpression(SyntaxKind.NullLiteralExpression)), SyntaxFactory.Block())))
-                    .WithModifiers(SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PrivateKeyword), SyntaxFactory.Token(SyntaxKind.StaticKeyword)));
+                    .WithModifiers(SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PrivateKeyword), SyntaxFactory.Token(SyntaxKind.StaticKeyword)))
+                    .NormalizeWhitespace();
         }
 
         private static FieldDeclarationSyntax AddDependencyProperty(TypeSyntax type, IdentifierNameSyntax dpName, ClassDeclarationSyntax @class, VariableDeclaratorSyntax variable)
@@ -77,13 +87,14 @@ namespace dpGenerator
                             SyntaxFactory.Identifier(dpName.Identifier.Text))
                                 .WithInitializer(SyntaxFactory.EqualsValueClause(SyntaxFactory.InvocationExpression(memberaccess, SyntaxFactory.ArgumentList(argumentList))
                 )))))
-            .WithModifiers(SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PublicKeyword), SyntaxFactory.Token(SyntaxKind.StaticKeyword), SyntaxFactory.Token(SyntaxKind.ReadOnlyKeyword))).NormalizeWhitespace();
+            .WithModifiers(SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PublicKeyword), SyntaxFactory.Token(SyntaxKind.StaticKeyword), SyntaxFactory.Token(SyntaxKind.ReadOnlyKeyword)))
+            .NormalizeWhitespace();
         }
 
         private static void PrintNode<TNode>(TNode node)
              where TNode : SyntaxNode
         {
-            Console.WriteLine(node.NormalizeWhitespace());
+            Console.WriteLine(node);
             Console.WriteLine();
         }
 
