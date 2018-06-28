@@ -63,15 +63,20 @@ namespace dpGenerator
                     .NormalizeWhitespace();
         }
 
-        private static FieldDeclarationSyntax AddDependencyProperty(TypeSyntax type, IdentifierNameSyntax dpName, ClassDeclarationSyntax @class, VariableDeclaratorSyntax variable)
+        private static FieldDeclarationSyntax AddDependencyProperty(TypeSyntax type, IdentifierNameSyntax dpName, ClassDeclarationSyntax @class, VariableDeclaratorSyntax variable, bool renderFrameworkCallback)
         {            
             var memberaccess = SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, SyntaxFactory.IdentifierName("DependencyProperty"), SyntaxFactory.IdentifierName("Register"));
+
+            var frameworkMetadataArguments = new ArgumentSyntax[] { SyntaxFactory.Argument(variable.Initializer?.Value ?? SyntaxFactory.DefaultExpression(type)) };
+            if (renderFrameworkCallback)
+                frameworkMetadataArguments = frameworkMetadataArguments.Concat(new []{ SyntaxFactory.Argument(SyntaxFactory.IdentifierName(GetCallbackMethodName(variable))) }).ToArray();
+
             var argumentList = SyntaxFactory.SeparatedList(new[]
             {
                 SyntaxFactory.Argument(SyntaxFactory.InvocationExpression(SyntaxFactory.IdentifierName("nameof")).WithArgumentList(SyntaxFactory.ArgumentList(SyntaxFactory.SeparatedList(new[] { SyntaxFactory.Argument(SyntaxFactory.IdentifierName(variable.Identifier.Text))})))),
                 SyntaxFactory.Argument(SyntaxFactory.TypeOfExpression(type)),
                 SyntaxFactory.Argument(SyntaxFactory.TypeOfExpression(SyntaxFactory.ParseTypeName(@class.Identifier.Text))),
-                SyntaxFactory.Argument(SyntaxFactory.ObjectCreationExpression(SyntaxFactory.ParseTypeName("FrameworkPropertyMetadata")).WithArgumentList(SyntaxFactory.ArgumentList(SyntaxFactory.SeparatedList(new [] { SyntaxFactory.Argument(variable.Initializer?.Value ?? SyntaxFactory.DefaultExpression(type)), SyntaxFactory.Argument(SyntaxFactory.IdentifierName(GetCallbackMethodName(variable))) }))))
+                SyntaxFactory.Argument(SyntaxFactory.ObjectCreationExpression(SyntaxFactory.ParseTypeName("FrameworkPropertyMetadata")).WithArgumentList(SyntaxFactory.ArgumentList(SyntaxFactory.SeparatedList(frameworkMetadataArguments))))
             });
 
             var registerCall =
@@ -107,7 +112,8 @@ namespace dpGenerator
 				Console.WriteLine();
                 PrintNode(WrapProperty(variableDeclaration.Type, dpName, variable));
                 PrintNode(AddChangedMethod(@class, variable));
-                PrintNode(AddDependencyProperty(variableDeclaration.Type, dpName, @class, variable));
+                PrintNode(AddDependencyProperty(variableDeclaration.Type, dpName, @class, variable, true));
+                PrintNode(AddDependencyProperty(variableDeclaration.Type, dpName, @class, variable, false));
             }
         }
 
