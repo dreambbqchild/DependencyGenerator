@@ -1,11 +1,18 @@
 ﻿using System;
 using System.Linq;
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace dpGenerator
 {
+    public class VariableResult
+    {
+        public int GroupIndex { get; set; }
+        public SyntaxNode Value { get; set; }
+    }
+
     class Program
     {
 		private static readonly IdentifierNameSyntax getValue = SyntaxFactory.IdentifierName("GetValue");
@@ -103,24 +110,27 @@ namespace dpGenerator
             Console.WriteLine();
         }
 
-        private static void ProcessVariable(ClassDeclarationSyntax @class, VariableDeclarationSyntax variableDeclaration)
+        private static IEnumerable<VariableResult> ProcessVariable(ClassDeclarationSyntax @class, VariableDeclarationSyntax variableDeclaration)
         {
             foreach (var variable in variableDeclaration.Variables)
             {
                 var dpName = SyntaxFactory.IdentifierName(string.Concat(variable.Identifier.Text, "Property"));
-				Console.WriteLine(string.Concat("//--- ", variable.Identifier.Text, " ---"));
-				Console.WriteLine();
-                PrintNode(WrapProperty(variableDeclaration.Type, dpName, variable));
-                PrintNode(AddChangedMethod(@class, variable));
-                PrintNode(AddDependencyProperty(variableDeclaration.Type, dpName, @class, variable, true));
-                PrintNode(AddDependencyProperty(variableDeclaration.Type, dpName, @class, variable, false));
+                yield return new VariableResult() { GroupIndex = 0, Value = (SyntaxNode)WrapProperty(variableDeclaration.Type, dpName, variable) };
+                yield return new VariableResult() { GroupIndex = 1, Value = (SyntaxNode)AddChangedMethod(@class, variable) };
+                yield return new VariableResult() { GroupIndex = 2, Value = (SyntaxNode)AddDependencyProperty(variableDeclaration.Type, dpName, @class, variable, true) };
+                yield return new VariableResult() { GroupIndex = 3, Value = (SyntaxNode)AddDependencyProperty(variableDeclaration.Type, dpName, @class, variable, false) };
             }
         }
 
         private static void ProcessClass(ClassDeclarationSyntax @class)
         {
+            var results = Enumerable.Empty<VariableResult>();
             foreach (var variableDeclaration in @class.DescendantNodes().OfType<VariableDeclarationSyntax>())
-                ProcessVariable(@class, variableDeclaration);
+                results = results.Concat(ProcessVariable(@class, variableDeclaration));
+
+            foreach (var group in results.GroupBy(r => r.GroupIndex))
+                foreach (var item in group)
+                    PrintNode(item.Value);
         }
 		
         static void Main(string[] args)
