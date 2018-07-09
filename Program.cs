@@ -129,8 +129,17 @@ namespace dpGenerator
                 results = results.Concat(ProcessVariable(@class, variableDeclaration));
 
             foreach (var group in results.GroupBy(r => r.GroupIndex))
+            {
+                if(group.Key >= 3)
+                    Console.WriteLine();
+
                 foreach (var item in group)
-                    PrintNode(item.Value);
+                {
+                    Console.WriteLine(item.Value);
+                    if (group.Key < 2)
+                        Console.WriteLine();
+                }
+            }
         }
 		
         static void Main(string[] args)
