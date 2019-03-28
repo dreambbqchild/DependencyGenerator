@@ -10,16 +10,18 @@ namespace dpGenerator
     public class PropertySupport
     {
         public readonly DotNetPropertyResult DotNetProperty;
+        public readonly DotNetPropertyResult ReadOnlyDotNetProperty;
         public readonly AttachedPropertyAccessorsResult AttachedPropertyAccessors;
         public readonly ChangedCallbackResult ChangedCallback;
         public readonly DependencyPropertyResult DependencyProperty;
 
-        public PropertySupport(IdentifierNameSyntax dpName, ClassDeclarationSyntax @class, TypeSyntax type, VariableDeclaratorSyntax variable)
+        public PropertySupport(IdentifierNameSyntax dpName, IdentifierNameSyntax dpKey, ClassDeclarationSyntax @class, TypeSyntax type, VariableDeclaratorSyntax variable)
         {
             DotNetProperty = new DotNetPropertyResult(type, dpName, variable);
+            ReadOnlyDotNetProperty = new DotNetPropertyResult(type, dpName, variable, dpKey);
             AttachedPropertyAccessors = new AttachedPropertyAccessorsResult(type, variable);
             ChangedCallback = new ChangedCallbackResult(@class, variable);
-            DependencyProperty = new DependencyPropertyResult(type, dpName, @class, variable);            
+            DependencyProperty = new DependencyPropertyResult(type, dpName, dpKey, @class, variable);            
         }
     }
 }

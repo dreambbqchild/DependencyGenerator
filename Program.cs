@@ -32,7 +32,8 @@ namespace dpGenerator
             foreach (var variable in variableDeclaration.Variables)
             {
                 var dpName = IdentifierName(string.Concat(variable.Identifier.Text, "Property"));
-                yield return new PropertySupport(dpName, @class, variableDeclaration.Type, variable);
+                var dpKey = IdentifierName(string.Concat(variable.Identifier.Text, "Key"));
+                yield return new PropertySupport(dpName, dpKey, @class, variableDeclaration.Type, variable);
             }
         }
 
@@ -47,6 +48,12 @@ namespace dpGenerator
             foreach (var result in finalResults)
             { 
                 Console.WriteLine(result.DotNetProperty);
+                Console.WriteLine();
+            }
+
+            foreach (var result in finalResults)
+            {
+                Console.WriteLine(result.ReadOnlyDotNetProperty);
                 Console.WriteLine();
             }
 
@@ -76,6 +83,11 @@ namespace dpGenerator
 
             foreach (var result in finalResults)
                 Console.WriteLine(result.DependencyProperty.ToString(DpOptions.RenderAttachedProperty));
+
+            Console.WriteLine();
+
+            foreach (var result in finalResults)
+                Console.WriteLine(result.DependencyProperty.ToString(DpOptions.RenderReadOnlyProperty));
         }
 		
         static void Main(string[] args)
@@ -87,7 +99,8 @@ namespace dpGenerator
             }
 
             var tree = CSharpSyntaxTree.ParseText(ReadPostData());
-			var root = tree.GetRoot();
+            
+            var root = tree.GetRoot();
             var classes = root.DescendantNodes().OfType<ClassDeclarationSyntax>();
 			
 			foreach(var @class in classes)

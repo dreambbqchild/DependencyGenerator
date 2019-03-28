@@ -13,6 +13,7 @@ namespace dpGenerator
     {
         private readonly TypeSyntax type;
         private readonly IdentifierNameSyntax dpName;
+        private readonly IdentifierNameSyntax dpKey;
         private readonly VariableDeclaratorSyntax variable;
 
         public DotNetPropertyResult(TypeSyntax type, IdentifierNameSyntax dpName, VariableDeclaratorSyntax variable)
@@ -20,6 +21,12 @@ namespace dpGenerator
             this.type = type;
             this.dpName = dpName;
             this.variable = variable;
+        }
+
+        public DotNetPropertyResult(TypeSyntax type, IdentifierNameSyntax dpName, VariableDeclaratorSyntax variable, IdentifierNameSyntax dpKey)
+            :this(type, dpName, variable)
+        {
+            this.dpKey = dpKey;
         }
 
         private PropertyDeclarationSyntax WrapProperty()
@@ -35,8 +42,9 @@ namespace dpGenerator
                                                                     .WithLeadingTrivia(Whitespace(" "))
                                                                     .WithTrailingTrivia(Whitespace(" ")))),
                     AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
+                        .WithModifiers(dpKey != null ? TokenList(Token(SyntaxKind.PrivateKeyword).WithTrailingTrivia(Whitespace(" "))) : TokenList())
                         .WithLeadingTrivia(CarriageReturnLineFeed, Tab)
-                        .WithBody(Block(ExpressionStatement(InvocationExpression(Program.SetValue, ArgumentList(SeparatedList(new ArgumentSyntax[] { Argument(dpName), Argument(IdentifierName("value")).WithLeadingTrivia(Whitespace(" ")) }))))
+                        .WithBody(Block(ExpressionStatement(InvocationExpression(Program.SetValue, ArgumentList(SeparatedList(new ArgumentSyntax[] { Argument(dpKey ?? dpName), Argument(IdentifierName("value")).WithLeadingTrivia(Whitespace(" ")) }))))
                                                                     .WithLeadingTrivia(Whitespace(" "))
                                                                     .WithTrailingTrivia(Whitespace(" "))))
                         .WithTrailingTrivia(CarriageReturnLineFeed));
