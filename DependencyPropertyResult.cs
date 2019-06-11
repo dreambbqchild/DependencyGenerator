@@ -51,7 +51,7 @@ namespace dpGenerator
             });
         }
 
-        private FieldDeclarationSyntax DeclareField(IdentifierNameSyntax identifier, string typeName, ExpressionSyntax expression, SeparatedSyntaxList<ArgumentSyntax> args)
+        private FieldDeclarationSyntax DeclareField(IdentifierNameSyntax identifier, string typeName, ExpressionSyntax expression, SeparatedSyntaxList<ArgumentSyntax> args, SyntaxKind access = SyntaxKind.PublicKeyword)
         {
             return FieldDeclaration(
                 VariableDeclaration(ParseTypeName(typeName))
@@ -60,7 +60,7 @@ namespace dpGenerator
                         VariableDeclarator(identifier.Identifier)
                         .WithInitializer(EqualsValueClause(InvocationExpression(expression, ArgumentList(args))
                 )))))
-            .WithModifiers(TokenList(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.StaticKeyword), Token(SyntaxKind.ReadOnlyKeyword)))
+            .WithModifiers(TokenList(Token(access), Token(SyntaxKind.StaticKeyword), Token(SyntaxKind.ReadOnlyKeyword)))
             .NormalizeWhitespace();
         }
 
@@ -78,7 +78,7 @@ namespace dpGenerator
             var key = MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, IdentifierName("DependencyProperty"), IdentifierName("RegisterReadOnly"));
             var argumentList = GetArgs(DpOptions.None);
             var registerCall = ExpressionStatement(InvocationExpression(key, ArgumentList(argumentList)));
-            var keyField = DeclareField(dpKey, "DependencyPropertyKey", key, argumentList);
+            var keyField = DeclareField(dpKey, "DependencyPropertyKey", key, argumentList, SyntaxKind.PrivateKeyword);
 
             var property = MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, IdentifierName(dpKey.Identifier.Text), IdentifierName("DependencyProperty"));
             var propretyField = FieldDeclaration(
