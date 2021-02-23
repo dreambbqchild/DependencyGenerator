@@ -92,14 +92,20 @@ namespace dpGenerator
 		
         static void Main(string[] args)
         {
-            if (Environment.GetEnvironmentVariable("REQUEST_METHOD") != "POST")
+            SyntaxTree tree = null;
+            if (args.Contains("-http"))
             {
-                Console.WriteLine("Not a Post");
-                return;
-            }
+                if (Environment.GetEnvironmentVariable("REQUEST_METHOD") != "POST")
+                {
+                    Console.WriteLine("Not a Post");
+                    return;
+                }
 
-            var tree = CSharpSyntaxTree.ParseText(ReadPostData());
-            
+                tree = CSharpSyntaxTree.ParseText(ReadPostData());
+            }
+            else
+                tree = CSharpSyntaxTree.ParseText(Console.In.ReadToEnd());
+
             var root = tree.GetRoot();
             var classes = root.DescendantNodes().OfType<ClassDeclarationSyntax>();
 			
